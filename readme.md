@@ -11,9 +11,16 @@
 	mosquitto_sub -d -t hello/world
 	mosquitto_pub -d -t hello/world -m "Hello from Terminal window 2!"
 
-### Заметки
 
-- Путь к библиотекам, устанавливаемым через менеджер: `corsair2\\Documents\\Arduino\\libraries`
+### Настройка VS Code для работы с Arduino
+
+- Установить плагин Arduino
+- Прописать путь к библиотекам, устанавливаемым через менеджер: 
+	`corsair2\\Documents\\Arduino\\libraries` в `arduino.json`
+- Добавить параметр `"output": "build"` в `arduino.json`
+
+
+### Заметки
 - Логин пароль `esp/esp`
 
 
