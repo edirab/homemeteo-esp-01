@@ -11,6 +11,8 @@
 #define LED_MQTT 3
 #define LED_SOIL 4
 
+#define PERIOD 2000 // msec
+
 struct luminance
 {
     uint16_t r1;
@@ -33,28 +35,42 @@ class MyMeteo
 
         void check_connection()
         {
-            if (Serial.available())
+
+            uint64_t timest = millis();
+            uint64_t now_;
+
+            do 
             {
-                String s1 = Serial.readString();
-                if (s1 == "WIFI_FAIL\n" )
+                now_ = millis();
+                
+                if (Serial.available())
                 {
-                    digitalWrite(LED_WIFI, HIGH);
-                } 
-                else if (s1 == "WIFI_OK\n")
-                {
-                    digitalWrite(LED_WIFI, LOW);
-                } 
-                else if (s1 == "MQTT_FAIL\n")
-                {
-                    digitalWrite(LED_MQTT, HIGH);
+                    String s1 = Serial.readString();
+                    /*
+                        Сделано с целью избежать проблем с разными символами окончания строк \r\n vs \n
+                        у ESP 01 и терминала VS Code
+                    */
+                    if (s1.startsWith("WIFI_FAIL") )
+                    {
+                        digitalWrite(LED_WIFI, HIGH);
+                    } 
+                    else if (s1.startsWith("WIFI_OK"))
+                    {
+                        digitalWrite(LED_WIFI, LOW);
+                    } 
+                    else if (s1.startsWith("MQTT_FAIL"))
+                    {
+                        digitalWrite(LED_MQTT, HIGH);
+                    }
+                    else if ( s1.startsWith("MQTT_OK"))
+                    {
+                        digitalWrite(LED_MQTT, LOW);
+                    }
+                    Serial.print(s1);
                 }
-                else if ( s1 == "MQTT_OK\n")
-                {
-                    digitalWrite(LED_MQTT, LOW);
-                }
-                Serial.print(s1);
+
             }
-            
+            while (now_ - timest < PERIOD );
             return;
         }
 
@@ -149,9 +165,8 @@ void setup()
 
 void loop()
 {
-    mymeteo.check_connection();
     mymeteo.send_parsel();
+    mymeteo.check_connection();
 
-    delay(2000);
     return;
 }
