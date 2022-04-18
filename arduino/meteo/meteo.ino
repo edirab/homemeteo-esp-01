@@ -7,6 +7,9 @@
 #define DHTPIN 6     // what pin we're connected to
 #define DHTTYPE DHT22   // DHT 22  (AM2302)
 
+#define LED_WIFI 2
+#define LED_MQTT 3
+#define LED_SOIL 4
 
 struct luminance
 {
@@ -26,6 +29,33 @@ class MyMeteo
         explicit MyMeteo() : dht(DHTPIN, DHTTYPE) 
         {
             dht.begin();
+        }
+
+        void check_connection()
+        {
+            if (Serial.available())
+            {
+                String s1 = Serial.readString();
+                if (s1 == "WIFI_FAIL\n" )
+                {
+                    digitalWrite(LED_WIFI, HIGH);
+                } 
+                else if (s1 == "WIFI_OK\n")
+                {
+                    digitalWrite(LED_WIFI, LOW);
+                } 
+                else if (s1 == "MQTT_FAIL\n")
+                {
+                    digitalWrite(LED_MQTT, HIGH);
+                }
+                else if ( s1 == "MQTT_OK\n")
+                {
+                    digitalWrite(LED_MQTT, LOW);
+                }
+                Serial.print(s1);
+            }
+            
+            return;
         }
 
         void send_parsel()
@@ -111,12 +141,15 @@ MyMeteo mymeteo;
 
 void setup()
 {
+    pinMode(LED_WIFI, OUTPUT);
+    pinMode(LED_MQTT, OUTPUT);
     Serial.begin(115200);
 }
 
 
 void loop()
 {
+    mymeteo.check_connection();
     mymeteo.send_parsel();
 
     delay(2000);

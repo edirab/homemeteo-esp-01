@@ -4,8 +4,10 @@
 #define PUB_DELAY (5 * 1000) /* 5 seconds */
 
 EspMQTTClient client(
-  "DuckNet_2G",
-  "duckyduck",
+  //"DuckNet_2G",
+  //"duckyduck",
+  "poco",
+  "pocopoco",
 
   "192.168.1.75",
   "esp", 	// login
@@ -25,7 +27,8 @@ struct  UartData
 	}
 };
 
-
+bool wifi_connected = false;
+bool mqtt_connected = false;
 
 void setup() 
 {
@@ -34,9 +37,12 @@ void setup()
 
 void onConnectionEstablished() 
 {
+	wifi_connected = true;
+	mqtt_connected = true;
+
 	client.subscribe("base/relay/led1", [] (const String &payload)  
 		{
-			Serial.println(payload);
+			//Serial.println(payload);
 		}
 	);
 }
@@ -108,6 +114,29 @@ void parseString(String& str, UartData& data)
 void loop() 
 {
 	UartData uart_parcel;
+
+	if ( !client.isWifiConnected() && wifi_connected)
+	{
+		wifi_connected = false;
+		Serial.println("WIFI_FAIL");
+	}
+	else if ( client.isWifiConnected() && !wifi_connected)
+	{
+		wifi_connected = true;
+		Serial.println("WIFI_OK");
+	}
+
+
+	if ( !client.isMqttConnected() && mqtt_connected)
+	{
+		mqtt_connected = false;
+		Serial.println("MQTT_FAIL");
+	}
+	else if ( client.isMqttConnected() && !mqtt_connected)
+	{
+		mqtt_connected = true;
+		Serial.println("MQTT_OK");
+	}
 
 	client.loop();
 
