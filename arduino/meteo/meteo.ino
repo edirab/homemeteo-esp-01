@@ -10,6 +10,14 @@
 #define LED_WIFI 2
 #define LED_MQTT 3
 #define LED_SOIL 4
+#define DEBUG_PIN 5
+#define RSP_ESP 7
+
+// conn statuses
+#define WIFI_FAIL 1
+#define WIFI_OK	2
+#define MQTT_FAIL 3
+#define MQTT_OK 4
 
 #define PERIOD 2000 // msec
 
@@ -45,28 +53,29 @@ class MyMeteo
                 
                 if (Serial.available())
                 {
-                    String s1 = Serial.readString();
+                    digitalWrite(DEBUG_PIN, HIGH);
+                    String s1 = Serial.readStringUntil('\n');
                     /*
                         Сделано с целью избежать проблем с разными символами окончания строк \r\n vs \n
                         у ESP 01 и терминала VS Code
-                    */
-                    if (s1.startsWith("WIFI_FAIL") )
+                     */
+                    switch(s1.charAt(0) - '0')
                     {
-                        digitalWrite(LED_WIFI, HIGH);
-                    } 
-                    else if (s1.startsWith("WIFI_OK"))
-                    {
-                        digitalWrite(LED_WIFI, LOW);
-                    } 
-                    else if (s1.startsWith("MQTT_FAIL"))
-                    {
-                        digitalWrite(LED_MQTT, HIGH);
-                    }
-                    else if ( s1.startsWith("MQTT_OK"))
-                    {
-                        digitalWrite(LED_MQTT, LOW);
+                        case WIFI_FAIL:
+                            digitalWrite(LED_WIFI, HIGH);
+                            break;
+                        case WIFI_OK:
+                            digitalWrite(LED_WIFI, LOW);
+                            break;
+                        case MQTT_FAIL:
+                            digitalWrite(LED_MQTT, HIGH);
+                            break;
+                        case MQTT_OK:
+                            digitalWrite(LED_MQTT, LOW);
+                            break;
                     }
                     Serial.print(s1);
+                    digitalWrite(DEBUG_PIN, LOW);
                 }
 
             }
@@ -159,7 +168,14 @@ void setup()
 {
     pinMode(LED_WIFI, OUTPUT);
     pinMode(LED_MQTT, OUTPUT);
+    pinMode(DEBUG_PIN, OUTPUT);
+
+    digitalWrite(DEBUG_PIN, HIGH);
+    // Для пропуска отладочного вывода загрузчика esp 01
+    delay(20);
     Serial.begin(115200);
+    digitalWrite(DEBUG_PIN, LOW);
+    
 }
 
 

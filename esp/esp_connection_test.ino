@@ -3,6 +3,11 @@
                            /* https://github.com/knolleary/pubsubclient */
 #define PUB_DELAY (5 * 1000) /* 5 seconds */
 
+#define WIFI_FAIL "1"
+#define WIFI_OK	"2"
+#define MQTT_FAIL "3"
+#define MQTT_OK "4"
+
 EspMQTTClient client(
   //"DuckNet_2G",
   //"duckyduck",
@@ -27,8 +32,8 @@ struct  UartData
 	}
 };
 
-bool wifi_connected = false;
-bool mqtt_connected = false;
+bool wifi_was_connected = true;
+bool mqtt_was_connected = true;
 
 void setup() 
 {
@@ -37,8 +42,8 @@ void setup()
 
 void onConnectionEstablished() 
 {
-	wifi_connected = true;
-	mqtt_connected = true;
+	wifi_was_connected = true;
+	mqtt_was_connected = true;
 
 	client.subscribe("base/relay/led1", [] (const String &payload)  
 		{
@@ -115,27 +120,27 @@ void loop()
 {
 	UartData uart_parcel;
 
-	if ( !client.isWifiConnected() && wifi_connected)
+	if ( !client.isWifiConnected() && wifi_was_connected)
 	{
-		wifi_connected = false;
-		Serial.println("WIFI_FAIL");
+		wifi_was_connected = false;
+		Serial.println(WIFI_FAIL);
 	}
-	else if ( client.isWifiConnected() && !wifi_connected)
+	else if ( client.isWifiConnected() && !wifi_was_connected)
 	{
-		wifi_connected = true;
-		Serial.println("WIFI_OK");
+		wifi_was_connected = true;
+		Serial.println(WIFI_OK);
 	}
 
 
-	if ( !client.isMqttConnected() && mqtt_connected)
+	if ( !client.isMqttConnected() && mqtt_was_connected)
 	{
-		mqtt_connected = false;
-		Serial.println("MQTT_FAIL");
+		mqtt_was_connected = false;
+		Serial.println(MQTT_FAIL);
 	}
-	else if ( client.isMqttConnected() && !mqtt_connected)
+	else if ( client.isMqttConnected() && !mqtt_was_connected)
 	{
-		mqtt_connected = true;
-		Serial.println("MQTT_OK");
+		mqtt_was_connected = true;
+		Serial.println(MQTT_OK);
 	}
 
 	client.loop();

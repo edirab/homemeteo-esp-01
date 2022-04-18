@@ -21,6 +21,7 @@
             "includePath": [
                 "C:\\Users\\corsair2\\AppData\\Local\\Arduino15\\packages\\esp8266\\hardware\\esp8266\\3.0.2\\tools\\sdk\\include",
                 "C:\\Users\\corsair2\\AppData\\Local\\Arduino15\\packages\\esp8266\\hardware\\esp8266\\3.0.2\\tools\\sdk\\lwip2\\include",
+                "d:\\PycharmProjects\\arduino\\esp-mosquitto\\esp\\build\\core",
                 "C:\\Users\\corsair2\\AppData\\Local\\Arduino15\\packages\\esp8266\\hardware\\esp8266\\3.0.2\\cores\\esp8266",
                 "C:\\Users\\corsair2\\AppData\\Local\\Arduino15\\packages\\esp8266\\hardware\\esp8266\\3.0.2\\variants\\generic",
                 "C:\\Users\\corsair2\\Documents\\Arduino\\libraries\\EspMQTTClient\\src",
