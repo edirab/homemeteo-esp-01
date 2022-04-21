@@ -4,14 +4,15 @@
 #include <DHT.h>
 
  
-#define DHTPIN 6     // what pin we're connected to
+#define DHTPIN  11     // what pin we're connected to
 #define DHTTYPE DHT22   // DHT 22  (AM2302)
 
-#define LED_WIFI 2
-#define LED_MQTT 3
-#define LED_SOIL 4
+#define LED_MQTT 8 //  Red
+#define LED_SOIL 7 // Yellow
+#define LED_WIFI 6 // Green
+
+
 #define DEBUG_PIN 5
-#define RSP_ESP 7
 
 // conn statuses
 #define WIFI_FAIL 1
