@@ -5,3 +5,4 @@ fp-info-cache
 #auto_saved_files#
 esm_mosquitto-backups/
 _autosave-*
+*.kicad_sch-bak

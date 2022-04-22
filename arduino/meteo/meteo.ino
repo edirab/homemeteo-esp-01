@@ -139,7 +139,7 @@ class MyMeteo
 
             if (isnan(hum) )
             {
-                Serial.println("Failed to read humidity from DHT sensor!");
+                //Serial.println("Failed to read humidity from DHT sensor!");
                 data.hum = String("-99");
             }
             else
@@ -149,7 +149,7 @@ class MyMeteo
 
             if (isnan(tempC))
             {
-                Serial.println("Failed to read temp from DHT sensor!");
+                //Serial.println("Failed to read temp from DHT sensor!");
                 data.temp = String("-99");
             }
             else

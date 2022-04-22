@@ -9,10 +9,10 @@
 #define MQTT_OK "4"
 
 EspMQTTClient client(
-  //"DuckNet_2G",
-  //"duckyduck",
-  "poco",
-  "pocopoco",
+  "DuckNet_2G",
+  "duckyduck",
+  //"poco",
+  //"pocopoco",
 
   "192.168.1.75",
   "esp", 	// login
