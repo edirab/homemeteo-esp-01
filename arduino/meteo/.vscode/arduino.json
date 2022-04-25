@@ -1,6 +1,6 @@
 {
     "sketch": "meteo.ino",
-    "port": "COM3",
+    "port": "COM5",
     "board": "arduino:avr:nano",
     "configuration": "cpu=atmega328",
     "output": "build",

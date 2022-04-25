@@ -15,10 +15,12 @@
 #define DEBUG_PIN 5
 
 // conn statuses
+#define MSG_PREFIX "METEO_"
 #define WIFI_FAIL 1
 #define WIFI_OK	2
 #define MQTT_FAIL 3
 #define MQTT_OK 4
+
 
 #define PERIOD 2000 // msec
 
@@ -54,31 +56,38 @@ class MyMeteo
                 
                 if (Serial.available())
                 {
-                    digitalWrite(DEBUG_PIN, HIGH);
                     String s1 = Serial.readStringUntil('\n');
-                    /*
-                        Сделано с целью избежать проблем с разными символами окончания строк \r\n vs \n
-                        у ESP 01 и терминала VS Code
-                     */
-                    switch(s1.charAt(0) - '0')
-                    {
-                        case WIFI_FAIL:
-                            digitalWrite(LED_WIFI, HIGH);
-                            break;
-                        case WIFI_OK:
-                            digitalWrite(LED_WIFI, LOW);
-                            break;
-                        case MQTT_FAIL:
-                            digitalWrite(LED_MQTT, HIGH);
-                            break;
-                        case MQTT_OK:
-                            digitalWrite(LED_MQTT, LOW);
-                            break;
-                    }
-                    Serial.print(s1);
-                    digitalWrite(DEBUG_PIN, LOW);
-                }
 
+                    if (s1.startsWith(MSG_PREFIX))
+                    {
+                        digitalWrite(DEBUG_PIN, HIGH);
+                        /*
+                            Сделано с целью избежать проблем с разными символами окончания строк \r\n vs \n
+                            у ESP 01 и терминала VS Code
+                        */
+                        switch(s1.charAt(6) - '0')
+                        {
+                            case WIFI_FAIL:
+                                digitalWrite(LED_WIFI, HIGH);
+                                Serial.println("ACK_1");
+                                break;
+                            case WIFI_OK:
+                                digitalWrite(LED_WIFI, LOW);
+                                Serial.println("ACK_2");
+                                break;
+                            case MQTT_FAIL:
+                                digitalWrite(LED_MQTT, HIGH);
+                                Serial.println("ACK_3");
+                                break;
+                            case MQTT_OK:
+                                digitalWrite(LED_MQTT, LOW);
+                                Serial.println("ACK_4");
+                                break;
+                        }
+                        //Serial.print(s1);
+                        digitalWrite(DEBUG_PIN, LOW);
+                    }
+                }
             }
             while (now_ - timest < PERIOD );
             return;
@@ -149,7 +158,6 @@ class MyMeteo
 
             if (isnan(tempC))
             {
-                //Serial.println("Failed to read temp from DHT sensor!");
                 data.temp = String("-99");
             }
             else

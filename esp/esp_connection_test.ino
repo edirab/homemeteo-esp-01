@@ -3,6 +3,7 @@
                            /* https://github.com/knolleary/pubsubclient */
 #define PUB_DELAY (5 * 1000) /* 5 seconds */
 
+#define MSG_PREFIX "METEO_"
 #define WIFI_FAIL "1"
 #define WIFI_OK	"2"
 #define MQTT_FAIL "3"
@@ -32,8 +33,8 @@ struct  UartData
 	}
 };
 
-bool wifi_was_connected = true;
-bool mqtt_was_connected = true;
+bool wifi_is_connected = true;
+bool mqtt_is_connected = true;
 
 void setup() 
 {
@@ -42,8 +43,8 @@ void setup()
 
 void onConnectionEstablished() 
 {
-	wifi_was_connected = true;
-	mqtt_was_connected = true;
+	// wifi_is_connected = true;
+	// mqtt_is_connected = true;
 
 	client.subscribe("base/relay/led1", [] (const String &payload)  
 		{
@@ -79,69 +80,104 @@ void publishTemperature(UartData& data)
 */
 void parseString(String& str, UartData& data)
 {
-	uint8_t i = 0; 
-	uint8_t space_counter = 0;
 	data.clean();
-
-	for ( ; i < str.length(); i++)
+	if (str.charAt(0) != 'A') 
 	{
-		char ch = str.charAt(i);
-		if ( ch == ' ' )
+		uint8_t i = 0; 
+		uint8_t space_counter = 0;
+		
+		for ( ; i < str.length(); i++)
 		{
-			space_counter++;
-			continue;
-		}
+			char ch = str.charAt(i);
+			if ( ch == ' ' )
+			{
+				space_counter++;
+				continue;
+			}
 
-		switch (space_counter)
-		{
-		case 0:
-			data.temp += ch;
-			break;
-		case 1:
-			data.hum += ch;
-			break;
-		case 2:
-			data.soil += ch;
-			break;
-		case 3:
-			data.lum1 += ch;
-			break;
-		case 4:
-			data.lum2 += ch;
-			break;			
-		default:
-			break;
+			switch (space_counter)
+			{
+			case 0:
+				data.temp += ch;
+				break;
+			case 1:
+				data.hum += ch;
+				break;
+			case 2:
+				data.soil += ch;
+				break;
+			case 3:
+				data.lum1 += ch;
+				break;
+			case 4:
+				data.lum2 += ch;
+				break;			
+			default:
+				break;
+			}
 		}
 	}
+	return;
+}
+
+void send_command(const String& command, const String& expected_ack)
+{
+	bool got_ack = false;
+
+	while(!got_ack)
+	{
+		Serial.print(MSG_PREFIX);
+		Serial.println(command);
+		delay(5);
+
+		if (Serial.available())
+		{
+			String s = Serial.readString();
+			if (s.startsWith(expected_ack))
+			{
+				got_ack = true;
+			}
+		}
+		delay(10);
+	}
+	return;
+}
+
+
+void check_connection()
+{
+	// зажечь зелёный светодиод
+	if ( !client.isWifiConnected() && wifi_is_connected)
+	{
+		wifi_is_connected = false;
+		send_command(WIFI_FAIL, "ACK_1");
+	}
+	// погасить зелёный светодиод
+	else if ( client.isWifiConnected() && !wifi_is_connected)
+	{
+		wifi_is_connected = true;
+		send_command(WIFI_OK, "ACK_2");
+	}
+	// зажечь красный светодиод
+	if ( !client.isMqttConnected() && mqtt_is_connected)
+	{
+		mqtt_is_connected = false;
+		send_command(MQTT_FAIL, "ACK_3");
+	}
+	// погасить красный светодиод
+	else if ( client.isMqttConnected() && !mqtt_is_connected)
+	{
+		mqtt_is_connected = true;
+		send_command(MQTT_OK, "ACK_4");
+	}
+	return;
 }
 
 
 void loop() 
 {
 	UartData uart_parcel;
-
-	if ( !client.isWifiConnected() && wifi_was_connected)
-	{
-		wifi_was_connected = false;
-		Serial.println(WIFI_FAIL);
-	}
-	else if ( client.isWifiConnected() && !wifi_was_connected)
-	{
-		wifi_was_connected = true;
-		Serial.println(WIFI_OK);
-	}
-
-
-	if ( !client.isMqttConnected() && mqtt_was_connected)
-	{
-		mqtt_was_connected = false;
-		Serial.println(MQTT_FAIL);
-	}
-	else if ( client.isMqttConnected() && !mqtt_was_connected)
-	{
-		mqtt_was_connected = true;
-		Serial.println(MQTT_OK);
-	}
+	check_connection();
 
 	client.loop();
 

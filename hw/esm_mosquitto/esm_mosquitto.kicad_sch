@@ -1622,7 +1622,7 @@
   (symbol (lib_id "Device:R") (at 208.28 93.98 0) (unit 1)
     (in_bom yes) (on_board yes) (fields_autoplaced)
     (uuid 1e3fd3d5-91a2-4915-bf3d-e5e3d46d180b)
-    (property "Reference" "R?" (id 0) (at 210.82 92.7099 0)
+    (property "Reference" "R2" (id 0) (at 210.82 92.7099 0)
       (effects (font (size 1.27 1.27)) (justify left))
     )
     (property "Value" "1k" (id 1) (at 210.82 95.2499 0)
@@ -1820,7 +1820,7 @@
   (symbol (lib_id "Device:R_Photo") (at 208.28 83.82 0) (unit 1)
     (in_bom yes) (on_board yes) (fields_autoplaced)
     (uuid 66a63530-21d0-4c46-9871-3b13e24c24f3)
-    (property "Reference" "R?" (id 0) (at 210.82 82.5499 0)
+    (property "Reference" "R1" (id 0) (at 210.82 82.5499 0)
       (effects (font (size 1.27 1.27)) (justify left))
     )
     (property "Value" "R_Photo" (id 1) (at 210.82 85.0899 0)
@@ -1906,7 +1906,7 @@
   (symbol (lib_id "Device:R_Photo") (at 229.87 83.82 0) (unit 1)
     (in_bom yes) (on_board yes) (fields_autoplaced)
     (uuid 7db2a4b9-f872-48cc-a2a7-1f09e20dda1e)
-    (property "Reference" "R?" (id 0) (at 232.41 82.5499 0)
+    (property "Reference" "R3" (id 0) (at 232.41 82.5499 0)
       (effects (font (size 1.27 1.27)) (justify left))
     )
     (property "Value" "R_Photo" (id 1) (at 232.41 85.0899 0)
@@ -2024,7 +2024,7 @@
   (symbol (lib_id "Device:R") (at 229.87 93.98 0) (unit 1)
     (in_bom yes) (on_board yes) (fields_autoplaced)
     (uuid a681347c-2da8-48f2-88a6-f192a29fe2c6)
-    (property "Reference" "R?" (id 0) (at 232.41 92.7099 0)
+    (property "Reference" "R4" (id 0) (at 232.41 92.7099 0)
       (effects (font (size 1.27 1.27)) (justify left))
     )
     (property "Value" "1k" (id 1) (at 232.41 95.2499 0)
@@ -2373,6 +2373,18 @@
     (path "/8682b3fd-d185-44ae-a0e2-f836c2b8101e"
       (reference "J2") (unit 1) (value "Barrel_Jack") (footprint "TerminalBlock:TerminalBlock_Altech_AK300-2_P5.00mm")
     )
+    (path "/66a63530-21d0-4c46-9871-3b13e24c24f3"
+      (reference "R1") (unit 1) (value "R_Photo") (footprint "Connector_PinHeader_2.54mm:PinHeader_1x02_P2.54mm_Vertical")
+    )
+    (path "/1e3fd3d5-91a2-4915-bf3d-e5e3d46d180b"
+      (reference "R2") (unit 1) (value "1k") (footprint "Resistor_THT:R_Axial_DIN0207_L6.3mm_D2.5mm_P7.62mm_Horizontal")
+    )
+    (path "/7db2a4b9-f872-48cc-a2a7-1f09e20dda1e"
+      (reference "R3") (unit 1) (value "R_Photo") (footprint "Connector_PinHeader_2.54mm:PinHeader_1x02_P2.54mm_Vertical")
+    )
+    (path "/a681347c-2da8-48f2-88a6-f192a29fe2c6"
+      (reference "R4") (unit 1) (value "1k") (footprint "Resistor_THT:R_Axial_DIN0207_L6.3mm_D2.5mm_P7.62mm_Horizontal")
+    )
     (path "/9dcbe3b2-8052-429a-b956-ccd7c975e4f0"
       (reference "R5") (unit 1) (value "10k") (footprint "Resistor_THT:R_Axial_DIN0207_L6.3mm_D2.5mm_P7.62mm_Horizontal")
     )
@@ -2384,18 +2396,6 @@
     )
     (path "/53cf6359-9a2d-4893-94a0-2dda09a6ffef"
       (reference "R10") (unit 1) (value "470") (footprint "Resistor_THT:R_Axial_DIN0207_L6.3mm_D2.5mm_P7.62mm_Horizontal")
-    )
-    (path "/1e3fd3d5-91a2-4915-bf3d-e5e3d46d180b"
-      (reference "R?") (unit 1) (value "1k") (footprint "Resistor_THT:R_Axial_DIN0207_L6.3mm_D2.5mm_P7.62mm_Horizontal")
-    )
-    (path "/66a63530-21d0-4c46-9871-3b13e24c24f3"
-      (reference "R?") (unit 1) (value "R_Photo") (footprint "Connector_PinHeader_2.54mm:PinHeader_1x02_P2.54mm_Vertical")
-    )
-    (path "/7db2a4b9-f872-48cc-a2a7-1f09e20dda1e"
-      (reference "R?") (unit 1) (value "R_Photo") (footprint "Connector_PinHeader_2.54mm:PinHeader_1x02_P2.54mm_Vertical")
-    )
-    (path "/a681347c-2da8-48f2-88a6-f192a29fe2c6"
-      (reference "R?") (unit 1) (value "1k") (footprint "Resistor_THT:R_Axial_DIN0207_L6.3mm_D2.5mm_P7.62mm_Horizontal")
     )
     (path "/9826698f-7603-4370-b8fe-754eff05d0c9"
       (reference "U1") (unit 1) (value "ESP-01v090") (footprint "ESP-01:ESP-01")
