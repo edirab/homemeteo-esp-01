@@ -16,20 +16,12 @@ TOPIC = 'home/#'
 # что есть неоптимально. Схема базы данных будет переработана в будущем
 # Запись в БД будет происходить каждые 150 посылок, т.к. раз в 150 * 2 / 60 = 5 минут
 
-#N_RECORDS = 5 * 150
-N_RECORDS = 5 * 5
+N_RECORDS = 5 * 150
+#N_RECORDS = 5 * 5
 DATABASE_FILE = 'mqtt.sqlite3'
 
 messages = []
 timestamps = []
-
-class Parsel:
-    temp = 0
-    hum = 0
-    soil = 0
-    lum_1 = 0
-    lum_2 = 0
-
 
 
 def on_connect(mqtt_client, user_data, flags, conn_result):
@@ -71,7 +63,7 @@ def create_records(user_data):
                 record.append( int(payload) )
 
             elif msg.topic == "home/lum2":
-                #record.append( int(payload) )
+                record.append( int(payload) )
                 record.append( timestamps.pop(0) )
                 
 
