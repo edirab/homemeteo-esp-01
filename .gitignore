@@ -1,5 +1,7 @@
 build/
 mqtt.db
+mqtt_.db
+
 libs/
 fp-info-cache
 
