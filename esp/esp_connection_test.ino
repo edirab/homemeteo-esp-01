@@ -86,7 +86,8 @@ void parseString(String& str, UartData& data)
 		uint8_t i = 0; 
 		uint8_t space_counter = 0;
 		
-		for ( ; i < str.length(); i++)
+		// eliminating \r\n characters
+		for ( ; i < str.length() - 2; i++)
 		{
 			char ch = str.charAt(i);
 			if ( ch == ' ' )
