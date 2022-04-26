@@ -1,13 +1,16 @@
+
+
 build/
+libs/
 mqtt.db
 mqtt_.db
 log.txt
-
-
-libs/
 fp-info-cache
 
 
+.ipynb_checkpoints/
+
+# Kicad files
 esm_mosquitto-backups/
 _autosave-*
 *.kicad_sch-bak

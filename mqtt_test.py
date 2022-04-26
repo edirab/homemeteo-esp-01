@@ -14,11 +14,14 @@ TOPIC = 'home/#'
 
 # В текущей реализации каждый параметр записывается отдельной строкой, 
 # что есть неоптимально. Схема базы данных будет переработана в будущем
-# Запись в БД будет происходить каждые 60 посылок, т.к. раз в 2 минуты
+# Запись в БД будет происходить каждые 150 посылок, т.к. раз в 150 * 2 / 60 = 5 минут
+
+#N_RECORDS = 5 * 150
 N_RECORDS = 5 * 5
 DATABASE_FILE = 'mqtt.sqlite3'
 
 messages = []
+timestamps = []
 
 class Parsel:
     temp = 0
@@ -68,8 +71,9 @@ def create_records(user_data):
                 record.append( int(payload) )
 
             elif msg.topic == "home/lum2":
-                record.append( int(payload) )
-                record.append(int(time()))
+                #record.append( int(payload) )
+                record.append( timestamps.pop(0) )
+                
 
         print("records:")
         print(records)
@@ -89,12 +93,17 @@ def create_records(user_data):
 
         messages.clear()
         records.clear()
+        timestamps.clear()
         record.clear()
 
 
 def on_message(mqtt_client, user_data, message):
 
     messages.append(message)
+
+    if message.topic == "home/temperature":
+        timestamps.append(int(time()))
+
     create_records(user_data)
 
 
