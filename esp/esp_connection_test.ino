@@ -1,7 +1,6 @@
 #include "Arduino.h"
 #include "EspMQTTClient.h" /* https://github.com/plapointe6/EspMQTTClient */
                            /* https://github.com/knolleary/pubsubclient */
-#define PUB_DELAY (5 * 1000) /* 5 seconds */
 
 #define MSG_PREFIX "METEO_"
 #define WIFI_FAIL "1"
@@ -43,26 +42,26 @@ void setup()
 
 void onConnectionEstablished() 
 {
-	// wifi_is_connected = true;
-	// mqtt_is_connected = true;
-
 	client.subscribe("base/relay/led1", [] (const String &payload)  
 		{
-			//Serial.println(payload);
+			// nop
 		}
 	);
 }
 
-long last = 0;
-void publishTemperature(UartData& data) 
+/*!
+	Отправка немодифицированной строки с данными.
+	Разбор и обработка возлагаются на callback-обраотчик mqtt-брокера
+*/
+void publish_all_in_one(String &str)
 {
-	// long now = millis();
-	// if (client.isConnected() && (now - last > PUB_DELAY)) 
-	// {
-	// 	client.publish("home/temperature", String(random(20, 30)));
-	// 	client.publish("home/humidity", String(random(40, 90)));
-	// 	last = now;
-	// }
+	client.publish("home/all", str);
+	return;
+}
+
+
+void publish_separately(UartData& data) 
+{
 	if (client.isConnected()) 
 	{
 		client.publish("home/temperature", data.temp);
@@ -74,9 +73,10 @@ void publishTemperature(UartData& data)
 	return;
 }
 
-/*
-	Разбор строки вида
-		23.4 50.4 1020 456 567
+/*!
+	Разбор пришедшей по UART посылки вида вида 23.4 50.4 1020 456 567 и заполнение структуры UartData
+	\param[in]  str Полученная строка
+	\param[out] data Заполенная структура
 */
 void parseString(String& str, UartData& data)
 {
@@ -121,7 +121,13 @@ void parseString(String& str, UartData& data)
 	return;
 }
 
-void send_command(const String& command, const String& expected_ack)
+
+/*!
+	Отправка команды по UART вида METEO_command и ожидание подтверждения
+	\param[in] command 		команда
+	\param[in] expected_ack ожидаемый ответ
+*/
+void send_uart_command(const String& command, const String& expected_ack)
 {
 	bool got_ack = false;
 
@@ -144,32 +150,34 @@ void send_command(const String& command, const String& expected_ack)
 	return;
 }
 
-
-void check_connection()
+/*!
+	Проверка состояния беспроводного соединения
+*/
+void check_wireless_connection()
 {
 	// зажечь зелёный светодиод
 	if ( !client.isWifiConnected() && wifi_is_connected)
 	{
 		wifi_is_connected = false;
-		send_command(WIFI_FAIL, "ACK_1");
+		send_uart_command(WIFI_FAIL, "ACK_1");
 	}
 	// погасить зелёный светодиод
 	else if ( client.isWifiConnected() && !wifi_is_connected)
 	{
 		wifi_is_connected = true;
-		send_command(WIFI_OK, "ACK_2");
+		send_uart_command(WIFI_OK, "ACK_2");
 	}
 	// зажечь красный светодиод
 	if ( !client.isMqttConnected() && mqtt_is_connected)
 	{
 		mqtt_is_connected = false;
-		send_command(MQTT_FAIL, "ACK_3");
+		send_uart_command(MQTT_FAIL, "ACK_3");
 	}
 	// погасить красный светодиод
 	else if ( client.isMqttConnected() && !mqtt_is_connected)
 	{
 		mqtt_is_connected = true;
-		send_command(MQTT_OK, "ACK_4");
+		send_uart_command(MQTT_OK, "ACK_4");
 	}
 	return;
 }
@@ -178,17 +186,17 @@ void check_connection()
 void loop() 
 {
 	UartData uart_parcel;
-	check_connection();
+	check_wireless_connection();
 
 	client.loop();
 
 	if (Serial.available())
 	{
 		String s = Serial.readString();
-		parseString(s, uart_parcel);
-		publishTemperature(uart_parcel);
+		//parseString(s, uart_parcel);
+		//publish_separately(uart_parcel);
+		publish_all_in_one(s);
 	}
 	delay(20);
-
 	return;
 }
