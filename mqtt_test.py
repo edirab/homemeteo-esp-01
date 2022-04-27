@@ -4,24 +4,23 @@ from tempfile import tempdir
 import paho.mqtt.client as mqtt
 import sqlite3
 from time import time
+from time import ctime
  
 MQTT_HOST = '192.168.1.75'
 MQTT_PORT = 1883
 MQTT_CLIENT_ID = 'esp_1'
 MQTT_USER = 'esp'
 MQTT_PASSWORD = 'esp'
-TOPIC = 'home/#'
+TOPIC = 'home/all'
 
-# В текущей реализации каждый параметр записывается отдельной строкой, 
-# что есть неоптимально. Схема базы данных будет переработана в будущем
-# Запись в БД будет происходить каждые 150 посылок, т.к. раз в 150 * 2 / 60 = 5 минут
+# Запись в БД будет происходить каждые min * 60 s/min * 2 (минут), 
+# т.к. посылка приходит раз в 2 секунды
 
-N_RECORDS = 5 * 150
-#N_RECORDS = 5 * 5
+N_RECORDS = 5 * 60
+#N_RECORDS = 5
 DATABASE_FILE = 'mqtt.sqlite3'
 
 messages = []
-timestamps = []
 
 
 def on_connect(mqtt_client, user_data, flags, conn_result):
@@ -33,69 +32,33 @@ def create_records(user_data):
     if len(messages) > N_RECORDS:
 
         sql = 'INSERT INTO sensors_data (temp, hum, soil, lum_1, lum_2, created_at) VALUES (?, ?, ?, ?, ?, ?)'
-        records = []
-        record = []
-
-        first_elem = messages[0]
-        while first_elem.topic != "home/temperature":
-            messages.pop(0)
-            first_elem = messages[0]
-
-        for msg in messages:
-            payload = msg.payload.decode('utf-8')
-
-            if msg.topic == "home/temperature":
-
-                if len(record):
-                    records.append( tuple(record) )
-                    print(record)
-                    record.clear()
-
-                record.append( float(payload) )
-
-            elif msg.topic == "home/humidity":
-                record.append( float(payload) )
-
-            elif msg.topic == "home/soil":
-                record.append( int(payload) )
-
-            elif msg.topic == "home/lum1":
-                record.append( int(payload) )
-
-            elif msg.topic == "home/lum2":
-                record.append( int(payload) )
-                record.append( timestamps.pop(0) )
-                
-
-        print("records:")
-        print(records)
-        print("----")
-
-        # records_tuples = list(map(tuple, records))
-        # records_tuples = list(tuple(sub) for sub in records)
-
-        # print(records_tuples)
+        # print(messages)
+        print("Writing to DB at ", ctime(time()) )
 
         db_conn = user_data['db_conn']
         
         cursor = db_conn.cursor()
-        cursor.executemany(sql, records)
+        cursor.executemany(sql, messages)
         db_conn.commit()
         cursor.close()
-
         messages.clear()
-        records.clear()
-        timestamps.clear()
-        record.clear()
 
 
 def on_message(mqtt_client, user_data, message):
 
-    messages.append(message)
+    payload = message.payload.decode('utf-8')
+    payload = str(payload).strip().split(' ')
+    payload.append(int(time()))
 
-    if message.topic == "home/temperature":
-        timestamps.append(int(time()))
+    if (len(payload) >= 6):
+        payload[0] = float( payload[0] )
+        payload[1] = float( payload[1] )
+        payload[2] = int( payload[2] )
+        payload[3] = int( payload[3] )
+        payload[4] = int( payload[4] )
 
+    # print(payload)
+    messages.append( tuple(payload) )
     create_records(user_data)
 
 
