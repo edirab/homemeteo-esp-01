@@ -22,6 +22,13 @@
 ( в том числе и во сколько автор ложится спать :) )
 
 
+#### Цели проекта: 
+
+- освоить микроконтроллер ESP 8266 в его проестейшей версии ESP 01
+- познакомиться с протоколом MQTT
+- реализовать двунаправленную связь по UART между микроконтроллерами
+
+
 ### Состав репозитория
 
 - Скетч `meteo.ino` для Arduino
@@ -30,11 +37,23 @@
 - Проект KiCad 6.0: схема электическая принципиальная и примерная компоновка печатной платы
 
 
-#### Цели проекта: 
+### Настройка автозапуска приложения и резервного копирования
+```
+	chmod +x *.sh
+	./mqtt_backup.sh
 
-- освоить микроконтроллер ESP 8266 в его проестейшей версии ESP 01
-- познакомиться с протоколом MQTT
-- реализовать двунаправленную связь по UART между микроконтроллерами
+	crontab -e
+	
+	SHELL=/bin/bash
+	HOME=/home/pi
+	PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/local/games:/usr/games	
+	
+	@reboot 	 /usr/bin/python3 /home/pi/Documents/mqtt_test.py >> /home/pi/Documents/1.log &
+	15 50 * * *  /bin/bash  /home/pi/Documents/mqtt_backup.sh
+	
+	sudo service cron reload
+```
+- Для отладки пользоваться гайдом [отсюда](https://stackoverflow.com/questions/22743548/cronjob-not-running)
 
 
 ### Процесс разработки
@@ -143,6 +162,8 @@
 
 Единственный вариант - пропустить эти сообщения. Подключим вывод RST к ардуино
 
+
+
 ### Отладка автозапуска
 
 Способы настройки автозапуска
@@ -192,6 +213,9 @@
 =====
 
 cat /var/log/syslog | grep cron
+cat /var/log/syslog | grep CRON
+tail -f /var/log/syslog
+
 ps -ax | grep mqtt
 
 /usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/local/games:/usr/games
