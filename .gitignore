@@ -7,6 +7,8 @@ mqtt_.db
 log.txt
 fp-info-cache
 
+*.log
+*.sqlite3
 
 .ipynb_checkpoints/
 p1.txt

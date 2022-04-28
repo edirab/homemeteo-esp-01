@@ -74,7 +74,7 @@
 - [ ] Добавить обработку ЖЁЛТОГО светодиода, подобрать пороговое значение для влажности почвы
 - [ ] Оформить проект красиво: сделать фото устройства, составить Bill of Materials, сохранить в pdf схему эл. принц.
 
-- [ ] Разобраться как настроить автозапуск скрипта при старте Raspbian
+- [+] Разобраться как настроить автозапуск скрипта при старте Raspbian
 		@reboot sleep 10 && /home/pi/Documents/mqtt_test.py &> /dev/null &
 		@reboot sleep 10 && /usr/bin/python /home/pi/Documents/mqtt_test.py &> /home/pi/Documents/log.txt &
 
@@ -143,5 +143,59 @@
 
 Единственный вариант - пропустить эти сообщения. Подключим вывод RST к ардуино
 
+### Отладка автозапуска
 
+Способы настройки автозапуска
+- rc.local
+- init.d
+- systemd
+- cron
+- .bashrc
 
+##### 1. Скрипт dbg_cron.py
+
+1.1 Для отладки запуска в cron по reboot создадим простой скрипт.
+Просто выводим дату и время в файл
+
+В crontab обычного пользователя добавим 
+	@reboot /usr/bin/python3 /home/pi/Documents/dbg_cron.py
+
+- Просмотр изменений файла:
+	watch -n 1 tail -1 /tmp/dbg_cron.log
+
+1.2 Добавим используемые библиотеки
+
+1.3 Добавим амперсанд и перенаправление вывода в файл	
+	@reboot /usr/bin/python3 /home/pi/Documents/dbg_cron.py &
+
+1.4 Всё равно не работает. Добавляем больше принтов в скрипт на питоне.
+В итоге не может запуститься mqtt-брокер.
+
+1.5 Зададим явно переменные PATh && HOME в cron:
+
+	HOME=/home/pi
+	PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/local/games:/usr/games
+
+1.6 Попробум добавить просто пустую подписку mosquitto в cron
+	@reboot mosquitto_sub -t home/all >> 3.log
+	- не работает
+
+	sudo tail -n20 -f /var/log/mosquitto/mosquitto.log
+
+1.7 Додбавим в скрипт задержку как советовали в видео
+
+1.8 
+	sudo cp /home/pi/Documents/mymqttclient.service /etc/systemd/system/
+
+1.9 Проблема была в относительном пути к базе данных. Исправлено в скрипте
+
+=====
+
+cat /var/log/syslog | grep cron
+ps -ax | grep mqtt
+
+/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/local/games:/usr/games
+
+/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/local/games:/usr/games
+
+/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin

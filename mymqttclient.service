@@ -1,0 +1,7 @@
+[Service]
+Type=simple
+User=pi
+ExecStart=/usr/bin/python3 /home/pi/Documents/mqtt_test.py
+
+[Install]
+WantedBy=multi-user.target
