@@ -11,7 +11,7 @@
 - влажности почвы и 
 - относительной освещённости в двух точках 
 
-Пакет по локальной сети через wifi отправляется MQTT-брокеру `mosquitto`, развёрнутом на `Raspberry Pi 3B`. Скрипт `mqtt_test.py`, который обработывает callback от брокера, накапливает данные, добавляет к ним временную метку и раз в 5-10 минут производит запись в базу данных.
+Пакет по локальной сети через wifi отправляется MQTT-брокеру `mosquitto`, развёрнутом на `Raspberry Pi 3B`. Скрипт `mqtt_test.py`, который обработывает callback от брокера, накапливает данные, добавляет к ним временную метку и раз в 10 минут производит запись в базу данных.
 
 Раз в сутки производится резервное копирование БД на флешку.
 За день накапливается ~1,7 Mb
@@ -28,7 +28,7 @@
 
 - освоить микроконтроллер `ESP 8266` в его проестейшей версии `ESP 01`
 - познакомиться с протоколом MQTT
-- реализовать двунаправленную связь по UART между микроконтроллерами
+- реализовать надёжную двунаправленную связь по UART между микроконтроллерами на основе протокола с подтверждением
 - углубить познания в отладке `cron`
 
 
@@ -38,36 +38,85 @@
 - Скетч `esp_test.ino` для ESP-01
 - Python-скрипт `mqtt_test.py`
 - `bash`-скрипт для резервного копирования
-- Проект KiCad 6.0: схема электическая принципиальная и примерная компоновка печатной платы
+- Проект KiCad 6.0: 
+    + схема электическая принципиальная
+    + примерная компоновка печатной платы
+    + Bill of materials
+- фото устройства
 - описание для настройки автозапуска
+
+### Развёртывание ПО
+
+1. Установить зависимости
+```shell
+sudo apt update && sudo apt upgrade
+pip3 install pysqlite3
+pip3 install paho-mqtt
+pip3 install python-telegram-bot --upgrade
+sudo apt install -y mosquitto mosquitto-clients
+sudo systemctl enable mosquitto.service
+```
+2. Настроить `mqtt`-брокер
+- отредактировать системный конфигурационный файл или
+```shell
+sudo nano /etc/mosquitto/mosquitto.conf
+> listener 1883
+> allow_anonymous true
+```
+- скопировать конфигурацию `my.conf`: `sudo cp <path_to_repo/my.conf> /etc/mosquitto/conf.d/`
+
+3. `sudo reboot`
+4. Проверка конфигурации брокера:
+```shell
+	mosquitto_sub -d -t hello/world
+	mosquitto_pub -d -t hello/world -m "Hello from Terminal window 2!"
+	mosquitto_sub -t home/#
+```
 
 
 ### Настройка автозапуска приложения и резервного копирования
+
+1. Устанавливаем права и запускаем вручную, чтобы создать первоначальный файл базы данных на флешке.
 ```shell
 chmod +x *.sh
 ./mqtt_backup.sh
 ```
-чтобы создать первоначальный файл базы данных на флешке.
+2. Редактируем таблицу `cron` от имени обычного пользователя. Явно добавляем переменные окружения, т.к. у `cron` они отличаются
 ```shell
 crontab -e
 
 SHELL=/bin/bash
 HOME=/home/pi
 PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/local/games:/usr/games	
-```
-Редактируем от имени обычного пользователя. Явно добавляем переменные окружения, т.к. у `cron` они отличаются
-```shell
-@reboot 	 /usr/bin/python3 /home/pi/Documents/mqtt_test.py >> /home/pi/Documents/1.log &
-15 50 * * *  /bin/bash  /home/pi/Documents/mqtt_backup.sh
 
+@reboot 	 /usr/bin/python3 /home/pi/Documents/mqtt_test.py >> /home/pi/Documents/1.log &
+# Каждый день в 15:50
+50 15 * * *  /bin/bash  /home/pi/Documents/mqtt_backup.sh
+```
+
+3. Считываем заново таблицу
+```shell
 sudo service cron reload
 ```
-- Для отладки пользоваться гайдом [отсюда](https://stackoverflow.com/questions/22743548/cronjob-not-running)
+4. Проверка автозапуска
+```shell
+sudo reboot
+ps -ax | grep mqtt
+```
+
+
+#### Важно при настройке автозапуска по cron
+
+1. Пути ко всем ресурсам как в `crontab`, так и внутри скрипта, лучше прописывать абсолютные
+2. Ресурсы, к которым обраются скрипты, должны иметь соотв. права (БД и файл логов доступны для чтения/записи)
+3. Использовать лучше таблицу для обычного пользователя, а не `root`, в противном случае придётся устанавливать все библиотеки и для root: `sudo pip3 install pysqlite3`
+4. ! Формат записи: `# m h  dom mon dow   command` - сначала минуты!
+5. Для отладки пользоваться гайдом [отсюда](https://stackoverflow.com/questions/22743548/cronjob-not-running)
 
 
 ### Процесс разработки
 
-- [x] Устанока и настройка mqtt-брокера на Raspberry Pi
+- [x] Устанока и настройка `mqtt`-брокера на Raspberry Pi
 - [x] Поиск/проверка скрипта на python для записи данных, полученных от брокера
 - [x] Разработка тестового ПО для ESP-01 для отладки приёма данных по MQTT. Например, посылка миллисекунд с момента включения
 - [x] Определиться что будем использовать: ардуино в связке в esp 01
@@ -104,6 +153,8 @@ sudo service cron reload
 - [x] Разобраться как настроить автозапуск скрипта при старте Raspbian
 
 - [x] Добавить `bash`-скрипт для резервного копирования БД на флешку раз в сутки по `cron`
+- [ ] Сделать бота для Телеграм, чтобы можно было получить доступ к данным из любой точки мира с телефона. Продумать функционал
+
 - [ ] Как насчёт добавить какой-либо пользовательский интерфейс для задания новых
   + логина/пароля для wifi-сети,
   + ip-адреса mqtt-брокера
@@ -115,19 +166,6 @@ sudo service cron reload
 
 - Откуда взят [mqtt_test.py](https://lindevs.com/save-mqtt-data-to-sqlite-database-using-python/)
 
-Чтобы подключиться извне к mqtt-рокеру mosquitto нужно 
-добавить конфигурацию my.conf в `/etc/mosquitto/conf.d/`
-```
-	listener 1883
-	allow_anonymous true
-```
-- Команды для теста:
-
-```
-	mosquitto_sub -d -t hello/world
-	mosquitto_pub -d -t hello/world -m "Hello from Terminal window 2!"
-	mosquitto_sub -t home/#
-```
 
 ### Настройка VS Code для работы с Arduino
 
@@ -166,8 +204,7 @@ sudo service cron reload
 	The real solution is to pulldown GPIO15 so that even those bootup logs at UART0 can be stopped and now you're free to use the GPIO 1&3 for I/O operations.
 ```
 
-Единственный вариант - пропустить эти сообщения. Подключим вывод RST к ардуино
-
+Единственный вариант - пропустить эти сообщения
 
 
 ### Отладка автозапуска
@@ -189,43 +226,11 @@ sudo service cron reload
 
 - Просмотр изменений файла:
 	watch -n 1 tail -1 /tmp/dbg_cron.log
-
-1.2 Добавим используемые библиотеки
-
-1.3 Добавим амперсанд и перенаправление вывода в файл	
-	@reboot /usr/bin/python3 /home/pi/Documents/dbg_cron.py &
-
-1.4 Всё равно не работает. Добавляем больше принтов в скрипт на питоне.
-В итоге не может запуститься mqtt-брокер.
-
-1.5 Зададим явно переменные PATh && HOME в cron:
-
-	HOME=/home/pi
-	PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/local/games:/usr/games
-
-1.6 Попробум добавить просто пустую подписку mosquitto в cron
-	@reboot mosquitto_sub -t home/all >> 3.log
-	- не работает
-
 	sudo tail -n20 -f /var/log/mosquitto/mosquitto.log
-
-1.7 Додбавим в скрипт задержку как советовали в видео
-
-1.8 
 	sudo cp /home/pi/Documents/mymqttclient.service /etc/systemd/system/
-
-1.9 Проблема была в относительном пути к базе данных. Исправлено в скрипте
 
 =====
 
 cat /var/log/syslog | grep cron
 cat /var/log/syslog | grep CRON
 tail -f /var/log/syslog
-
-ps -ax | grep mqtt
-
-/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/local/games:/usr/games
-
-/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/local/games:/usr/games
-
-/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
