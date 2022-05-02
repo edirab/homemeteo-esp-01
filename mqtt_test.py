@@ -19,14 +19,15 @@ TOPIC = 'home/all'
 
 N_RECORDS = 5 * 60
 #N_RECORDS = 5
-DATABASE_FILE = '/home/pi/Documents/mqtt.sqlite3'
+DATABASE_FILE = '/home/pi/homemeteo-esp-01/mqtt.sqlite3'
 
 messages = []
 
 
 def on_connect(mqtt_client, user_data, flags, conn_result):
     mqtt_client.subscribe(TOPIC)
- 
+    return
+
 
 def create_records(user_data):
 
@@ -34,7 +35,7 @@ def create_records(user_data):
 
         sql = 'INSERT INTO sensors_data (temp, hum, soil, lum_1, lum_2, created_at) VALUES (?, ?, ?, ?, ?, ?)'
         # print(messages)
-        print("Writing to DB at ", ctime(time()) )
+        print("[mqtt] Writing to DB at ", ctime(time()) )
 
         db_conn = user_data['db_conn']
         
@@ -43,6 +44,7 @@ def create_records(user_data):
         db_conn.commit()
         cursor.close()
         messages.clear()
+    return
 
 
 def on_message(mqtt_client, user_data, message):
@@ -60,14 +62,17 @@ def on_message(mqtt_client, user_data, message):
 
     # print(payload)
     messages.append( tuple(payload) )
+    print("/", end='')
     create_records(user_data)
+    return
 
 
 def main():
+
     sleep(20)
-    print("Starting mqtt callback script at ", ctime(time()) )
+    print("[mqtt] Starting mqtt callback script at ", ctime(time()) )
     db_conn = sqlite3.connect(DATABASE_FILE)
-    print("Connected to DB ", DATABASE_FILE)
+    print("[mqtt] Connected to DB ", DATABASE_FILE)
 
     sql = """
     CREATE TABLE IF NOT EXISTS sensors_data (
@@ -87,7 +92,7 @@ def main():
     cursor.close()
  
     mqtt_client = mqtt.Client(MQTT_CLIENT_ID)
-    print("Starting mqtt client")
+    print("[mqtt] Starting mqtt client")
 
     mqtt_client.username_pw_set(MQTT_USER, MQTT_PASSWORD)
     mqtt_client.user_data_set({'db_conn': db_conn})
@@ -96,9 +101,9 @@ def main():
     mqtt_client.on_message = on_message
  
     mqtt_client.connect(MQTT_HOST, MQTT_PORT)
-    print("Connected to mqtt client")
+    print("[mqtt] Connected to mqtt client")
     mqtt_client.loop_forever()
-    print("Looping forever")
+    print("[mqtt] Looping forever")
  
- 
+
 main()
