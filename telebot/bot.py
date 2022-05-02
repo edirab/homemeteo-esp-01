@@ -4,7 +4,10 @@ import config
 import logging
 import sqlite3
 from time import ctime, time
-from datetime import datetime
+from datetime import datetime, timedelta
+
+from meteostat import Parsel, datetime_to_timestamp, setup
+from meteostat import plot_temp_hum, plot_soil, plot_lum, statistics_for_period
 
 from telegram import Update
 from telegram.ext import CallbackContext
@@ -36,7 +39,14 @@ Time: {}
 
 
 def start(update: Update, context: CallbackContext):
-    context.bot.send_message(chat_id=update.effective_chat.id, text="I'm a bot, please talk to me!")
+    resp = """
+List of commands:
+/start  - display this message
+/recent - get most recent data from database
+/daily  - plot T, H, S and Lum for today
+/daily dd.mm - plot stats for a period [dd.mm, today]
+"""
+    context.bot.send_message(chat_id=update.effective_chat.id, text=resp)
     return
 
 
@@ -59,7 +69,31 @@ def recent(update: Update, context: CallbackContext):
 
 def daily(update: Update, context: CallbackContext):
     params = update.message.text.split()
-    context.bot.send_photo(chat_id=update.effective_chat.id, photo=open('../imgs/1.jpg', 'rb'))
+    cursor = db_conn.cursor()
+    setup()
+
+    if len(params) == 1:
+
+        a = datetime.now()
+        day_now = (a.day, a.month, a.year)
+        b = a + timedelta(days=1)
+        day_tomorrow = (b.day, b.month, b.year)
+        
+        statistics_for_period( day_now, day_tomorrow,  cursor)
+
+    elif len(params) == 2:
+        begin_date = params[1].split('.')
+        day_begin = (int(begin_date[0]), int(begin_date[1]), 2022)
+        a = datetime.now()
+        day_now = (a.day, a.month, a.year)
+        statistics_for_period(day_begin, day_now, cursor)
+
+
+    #context.bot.send_photo(chat_id=update.effective_chat.id, photo=open('../imgs/1.jpg', 'rb'))
+    context.bot.send_photo(chat_id=update.effective_chat.id, photo=open('1.jpg', 'rb'))
+    context.bot.send_photo(chat_id=update.effective_chat.id, photo=open('2.jpg', 'rb'))
+    context.bot.send_photo(chat_id=update.effective_chat.id, photo=open('3.jpg', 'rb'))
+
     context.bot.send_message(chat_id=update.effective_chat.id, text=str(params))
     return
 

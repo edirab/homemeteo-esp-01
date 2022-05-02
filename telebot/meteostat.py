@@ -1,6 +1,6 @@
 from datetime import datetime, timezone
 from matplotlib import pyplot as plt
-
+import sqlite3
 
 class Parsel:
     def __init__(self, subset):
@@ -74,8 +74,10 @@ def plot_temp_hum(parsel, step=50, n_xticks=12):
     # plt.yticks(fontsize=14)
     
     plt.legend()
-    plt.savefig('1.jpg')
+    plt.savefig('1.jpg', bbox_inches='tight')
     plt.show()
+    plt.clf()
+    plt.cla()    
     return
 
 
@@ -98,8 +100,10 @@ def plot_soil(parsel, step=50, n_xticks=12):
     
     #plt.scatter(ts_min, soil_min, label='Soil')
     plt.legend()
-    plt.savefig('2.jpg')
+    plt.savefig('2.jpg', bbox_inches='tight')
     plt.show()
+    plt.clf()
+    plt.cla()
     return
 
 
@@ -127,8 +131,44 @@ def plot_lum(parsel, step=50, n_xticks=12):
     plt.xticks(myticks, newlabels)  # set new X axis ticks and labels
     
     plt.legend()
-    plt.savefig('3.jpg')
+    plt.savefig('3.jpg', bbox_inches='tight')
     plt.show()
+    plt.clf()
+    plt.cla()
     return
 
+
+def statistics_for_period(date1: tuple, date2: tuple, c : sqlite3.Cursor):
+    
+    # ts1 = datetime_to_timestamp(2022, 4, 28)
+    # ts2 = datetime_to_timestamp(2022, 4, 29)
+    
+    ts1 = datetime_to_timestamp(date1[2], date1[1], date1[0])
+    ts2 = datetime_to_timestamp(date2[2], date2[1], date2[0])
+    
+    print(ts1, ts2)
+    
+    sql = "select temp, hum, soil, lum_1, lum_2, created_at from sensors_data where created_at between " \
+    + str(ts1) + " and " + str(ts2) + " and created_at % 10 = 0"
+    c.execute(sql)
+    data = c.fetchall()
+    
+    
+    n_rows = len(data)
+    print("Строк за выбранный период: ", n_rows)
+    
+    if n_rows > 0:
+    
+        step = int(n_rows / 500)
+        print("Шаг выборки:", step)
+
+        subset = data[::step]
+        print("Размер подмножества для анализа: ", len(subset))
+        p2 = Parsel(subset)
+        #print(subset[:5])
+
+        plot_temp_hum(p2, 1, 12)
+        plot_soil(p2, 1, 12)
+        plot_lum(p2, 1, 12)
+    return
 
