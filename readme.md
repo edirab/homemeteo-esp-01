@@ -54,6 +54,7 @@ sudo apt update && sudo apt upgrade
 pip3 install pysqlite3
 pip3 install paho-mqtt
 pip3 install python-telegram-bot --upgrade
+pip3 install matplotlib
 sudo apt install -y mosquitto mosquitto-clients
 sudo systemctl enable mosquitto.service
 ```

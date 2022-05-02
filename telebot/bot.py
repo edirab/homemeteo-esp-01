@@ -50,8 +50,21 @@ List of commands:
     return
 
 
+def help(update: Update, context: CallbackContext):
+    resp = """
+List of commands:
+/start  - display this message
+/recent - get most recent data from database
+/daily  - plot T, H, S and Lum for today
+/daily dd.mm - plot stats for a period [dd.mm, today]
+"""
+    context.bot.send_message(chat_id=update.effective_chat.id, text=resp)
+    return
+
+
 def echo(update: Update, context: CallbackContext):
     context.bot.send_message(chat_id=update.effective_chat.id, text=update.message.text)
+    context.bot.send_dice(chat_id=update.effective_chat.id)
     return
 
 
@@ -89,12 +102,9 @@ def daily(update: Update, context: CallbackContext):
         statistics_for_period(day_begin, day_now, cursor)
 
 
-    #context.bot.send_photo(chat_id=update.effective_chat.id, photo=open('../imgs/1.jpg', 'rb'))
-    context.bot.send_photo(chat_id=update.effective_chat.id, photo=open('1.jpg', 'rb'))
-    context.bot.send_photo(chat_id=update.effective_chat.id, photo=open('2.jpg', 'rb'))
-    context.bot.send_photo(chat_id=update.effective_chat.id, photo=open('3.jpg', 'rb'))
-
-    context.bot.send_message(chat_id=update.effective_chat.id, text=str(params))
+    context.bot.send_photo(chat_id=update.effective_chat.id, photo=open('/run/user/1000/1.jpg', 'rb'))
+    context.bot.send_photo(chat_id=update.effective_chat.id, photo=open('/run/user/1000/2.jpg', 'rb'))
+    context.bot.send_photo(chat_id=update.effective_chat.id, photo=open('/run/user/1000/3.jpg', 'rb'))
     return
 
 
@@ -115,11 +125,13 @@ def main():
     echo_handler = MessageHandler(Filters.text & (~Filters.command), echo)
     recent_handler = CommandHandler('recent', recent)
     daily_handler = CommandHandler('daily', daily)
+    help_handler = CommandHandler('help', help)
 
     dispatcher.add_handler(start_handler)
     dispatcher.add_handler(echo_handler)
     dispatcher.add_handler(recent_handler)
     dispatcher.add_handler(daily_handler)
+    dispatcher.add_handler(help_handler)
 
     updater.start_polling()
     return

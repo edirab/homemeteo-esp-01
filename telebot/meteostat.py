@@ -74,7 +74,7 @@ def plot_temp_hum(parsel, step=50, n_xticks=12):
     # plt.yticks(fontsize=14)
     
     plt.legend()
-    plt.savefig('1.jpg', bbox_inches='tight')
+    plt.savefig('/run/user/1000/1.jpg', bbox_inches='tight')
     plt.show()
     plt.clf()
     plt.cla()    
@@ -100,7 +100,7 @@ def plot_soil(parsel, step=50, n_xticks=12):
     
     #plt.scatter(ts_min, soil_min, label='Soil')
     plt.legend()
-    plt.savefig('2.jpg', bbox_inches='tight')
+    plt.savefig('/run/user/1000/2.jpg', bbox_inches='tight')
     plt.show()
     plt.clf()
     plt.cla()
@@ -131,7 +131,7 @@ def plot_lum(parsel, step=50, n_xticks=12):
     plt.xticks(myticks, newlabels)  # set new X axis ticks and labels
     
     plt.legend()
-    plt.savefig('3.jpg', bbox_inches='tight')
+    plt.savefig('/run/user/1000/3.jpg', bbox_inches='tight')
     plt.show()
     plt.clf()
     plt.cla()
