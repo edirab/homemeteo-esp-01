@@ -22,4 +22,4 @@
 rm /media/pi/adata/homemeteo-esp-bak/*.bak
 mv /media/pi/adata/homemeteo-esp-bak/mqtt.sqlite3 /media/pi/adata/homemeteo-esp-bak/mqtt.sqlite3.bak
 
-cp /home/pi/Documents/mqtt.sqlite3  /media/pi/adata/homemeteo-esp-bak/
+cp /home/pi/homemeteo-esp-01/mqtt.sqlite3  /media/pi/adata/homemeteo-esp-bak/

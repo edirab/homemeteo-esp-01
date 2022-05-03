@@ -1,6 +1,7 @@
 #!/usr/bin/python3
 
 import config
+
 import logging
 import sqlite3
 from time import ctime, time
@@ -15,12 +16,11 @@ from telegram.ext import Updater
 from telegram.ext import CommandHandler
 from telegram.ext import MessageHandler, Filters
 
-#DATABASE_FILE = '/home/pi/homemeteo-esp-01/mqtt.sqlite3'
-DATABASE_FILE = '/mnt/d/PycharmProjects/arduino/esp-mosquitto/mqtt.sqlite3'
+
 
 print("[bot] Starting HomeMeteo bot script at ", ctime(time()) )
-db_conn = sqlite3.connect(DATABASE_FILE, check_same_thread=False)
-print("[bot] Connected to DB ", DATABASE_FILE)
+db_conn = sqlite3.connect(config.DATABASE_FILE, check_same_thread=False)
+print("[bot] Connected to DB ", config.DATABASE_FILE)
 
 def prettify(row):
 

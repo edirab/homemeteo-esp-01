@@ -159,7 +159,7 @@ def statistics_for_period(date1: tuple, date2: tuple, c : sqlite3.Cursor):
     
     if n_rows > 0:
     
-        step = int(n_rows / 500)
+        step = int(n_rows / 100)
         print("Шаг выборки:", step)
 
         subset = data[::step]
